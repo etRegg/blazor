@@ -1,0 +1,40 @@
+@page "/login"
+@inject NavigationManager Navigation
+@inject ApplicationUserManager UserManager
+
+<h3>Login</h3>
+
+<EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+  <DataAnnotationsValidator />
+  <ValidationSummary />
+
+  <div class="form-group">
+    <label for="email">Email</label>
+    <InputText id="email" @bind-Value="loginModel.Email" class="form-control" />
+  </div>
+
+  <div class="form-group">
+    <label for="password">Password</label>
+    <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" />
+  </div>
+
+  <button type="submit" class="btn btn-primary">Login</button>
+</EditForm>
+
+@code {
+  private LoginModel loginModel = new();
+
+  private async Task HandleLogin()
+  {
+    var result = await UserManager.LoginAsync(new LoginModel { Email = loginModel.Email, Password = loginModel.Password });
+
+    if (result.Succeeded)
+    {
+      Navigation.NavigateTo("/");
+    }
+    else
+    {
+      // Maneja el error de inicio de sesión
+    }
+  }
+}
