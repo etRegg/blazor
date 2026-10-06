@@ -1,35 +1,85 @@
 @inject NavigationManager Navigation
+@inject ApplicationUserManager UserManager
+@implements IDisposable
 
-<div class="top-row pl-4 navbar navbar-dark bg-dark">
-  <a href="" class="navbar-brand">BlazorApp</a>
-  <button class="navbar-toggler" @onclick="ToggleNavMenu">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-</div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+  <div class="container">
+    <NavLink class="navbar-brand fw-bold d-flex align-items-center" href="">
+      <i class="bi bi-shield-lock-fill me-2 fs-4"></i>
+      <span>HomeApp</span>
+    </NavLink>
 
-<div class="nav-menu collapse d-md-inline-flex flex-column pl-3">
-  <NavLink class="nav-link text-dark" href="" Match="NavLinkMatch.All">
-    <span class="oi oi-list-rich" aria-hidden="true"></span> Home
-  </NavLink>
-  <NavLink class="nav-link text-dark" href="/public">
-    <span class="oi oi-list-rich" aria-hidden="true"></span> Public Page
-  </NavLink>
-</div>
+    <button class="navbar-toggler border-0" type="button" @onclick="ToggleNavMenu" aria-controls="navbarSupportedContent" aria-expanded="@(!collapseNavMenu)" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-<div @onclick="ToggleNavMenu" class="nav-menu collapse navbar-collapse d-md-inline-flex flex-column pl-3">
-  <NavLink class="nav-link text-dark" href="/login">
-    <span class="oi oi-list-rich" aria-hidden="true"></span> Login
-  </NavLink>
-  <NavLink class="nav-link text-dark" href="/register">
-    <span class="oi oi-list-rich" aria-hidden="true"></span> Register
-  </NavLink>
-</div>
+    <div class="collapse navbar-collapse @(collapseNavMenu ? "" : "show")" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <NavLink class="nav-link px-3" href="" Match="NavLinkMatch.All">
+            <i class="bi bi-house-door me-1"></i> Inicio
+          </NavLink>
+        </li>
+        <li class="nav-item">
+          <NavLink class="nav-link px-3" href="/public">
+            <i class="bi bi-grid me-1"></i> Panel Público
+          </NavLink>
+        </li>
+      </ul>
+
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+        @if (UserManager.IsLoggedIn)
+        {
+          <li class="nav-item me-lg-3 my-2 my-lg-0">
+            <span class="badge bg-light text-primary px-3 py-2 fs-6 rounded-pill shadow-sm">
+              <i class="bi bi-person-circle me-1"></i> @UserManager.CurrentUser?.Email
+            </span>
+          </li>
+          <li class="nav-item">
+            <button class="btn btn-outline-light btn-sm px-3 rounded-pill" @onclick="HandleLogout">
+              <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+            </button>
+          </li>
+        }
+        else
+        {
+          <li class="nav-item me-2 my-1 my-lg-0">
+            <NavLink class="btn btn-outline-light btn-sm px-3 rounded-pill" href="/login">
+              <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión
+            </NavLink>
+          </li>
+          <li class="nav-item my-1 my-lg-0">
+            <NavLink class="btn btn-warning btn-sm px-3 rounded-pill fw-semibold shadow-sm text-dark" href="/register">
+              <i class="bi bi-person-plus me-1"></i> Registrarse
+            </NavLink>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+</nav>
 
 @code {
   private bool collapseNavMenu = true;
 
+  protected override void OnInitialized()
+  {
+    UserManager.OnAuthStateChanged += StateHasChanged;
+  }
+
+  public void Dispose()
+  {
+    UserManager.OnAuthStateChanged -= StateHasChanged;
+  }
+
   private void ToggleNavMenu()
   {
     collapseNavMenu = !collapseNavMenu;
+  }
+
+  private async Task HandleLogout()
+  {
+    await UserManager.LogoutAsync();
+    Navigation.NavigateTo("/login");
   }
 }

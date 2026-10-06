@@ -1,3 +1,118 @@
+@page "/"
 @page "/public"
-<h3>Public Page</h3>
-<p>This is a public page that requires login.</p>
+@inject ApplicationUserManager UserManager
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+      
+      @if (UserManager.IsLoggedIn)
+      {
+        <div class="p-5 mb-4 bg-white rounded-4 shadow-sm border border-light">
+          <div class="container-fluid py-2">
+            <div class="d-flex align-items-center mb-3">
+              <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fs-6 me-2">
+                <i class="bi bi-check-circle-fill me-1"></i> Sesión Activa
+              </span>
+            </div>
+            <h1 class="display-6 fw-bold text-dark">¡Bienvenido de nuevo!</h1>
+            <p class="col-md-8 fs-5 text-muted">
+              Has iniciado sesión como <strong class="text-primary">@UserManager.CurrentUser?.Email</strong>.
+            </p>
+            <hr class="my-4" />
+            <div class="d-flex flex-wrap gap-2">
+              <button class="btn btn-outline-danger btn-lg px-4 rounded-pill" @onclick="HandleLogout">
+                <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+      else
+      {
+        <div class="p-5 mb-4 bg-white rounded-4 shadow-sm border border-light text-center">
+          <div class="mb-3">
+            <i class="bi bi-shield-check text-primary display-3"></i>
+          </div>
+          <h1 class="display-5 fw-bold text-dark mb-3">Bienvenido a HomeApp</h1>
+          <p class="col-md-8 mx-auto fs-5 text-muted mb-4">
+            Aplicación Blazor WebAssembly con sistema completo de autenticación y registro de usuarios maquetado en Bootstrap 5.
+          </p>
+          <div class="d-flex justify-content-center flex-wrap gap-3">
+            <NavLink href="/login" class="btn btn-primary btn-lg px-4 rounded-pill shadow-sm">
+              <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar Sesión
+            </NavLink>
+            <NavLink href="/register" class="btn btn-outline-primary btn-lg px-4 rounded-pill">
+              <i class="bi bi-person-plus me-2"></i> Crear Cuenta
+            </NavLink>
+          </div>
+        </div>
+      }
+
+      <div class="row g-4 mt-2">
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="card-body">
+              <div class="d-inline-flex align-items-center justify-content-center text-primary bg-primary-subtle rounded-3 p-3 mb-3">
+                <i class="bi bi-key-fill fs-3"></i>
+              </div>
+              <h5 class="card-title fw-bold">Autenticación Segura</h5>
+              <p class="card-text text-muted small">
+                Gestión de inicio de sesión y registro con validaciones de formulario y retroalimentación interactiva.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="card-body">
+              <div class="d-inline-flex align-items-center justify-content-center text-primary bg-primary-subtle rounded-3 p-3 mb-3">
+                <i class="bi bi-bootstrap-fill fs-3"></i>
+              </div>
+              <h5 class="card-title fw-bold">Bootstrap 5</h5>
+              <p class="card-text text-muted small">
+                Diseño responsive moderno, limpio y adaptable a cualquier dispositivo móvil o de escritorio.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="card-body">
+              <div class="d-inline-flex align-items-center justify-content-center text-primary bg-primary-subtle rounded-3 p-3 mb-3">
+                <i class="bi bi-lightning-charge-fill fs-3"></i>
+              </div>
+              <h5 class="card-title fw-bold">Blazor WebAssembly</h5>
+              <p class="card-text text-muted small">
+                Rápido, dinámico y ejecutado del lado del cliente en el navegador mediante WebAssembly y Nginx.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+@code {
+  protected override void OnInitialized()
+  {
+    UserManager.OnAuthStateChanged += StateHasChanged;
+  }
+
+  public void Dispose()
+  {
+    UserManager.OnAuthStateChanged -= StateHasChanged;
+  }
+
+  private async Task HandleLogout()
+  {
+    await UserManager.LogoutAsync();
+    Navigation.NavigateTo("/login");
+  }
+}

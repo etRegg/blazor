@@ -1,11 +1,17 @@
 @inherits LayoutComponentBase
 
-<div class="page">
-  <div class="sidebar">
+<div class="d-flex flex-column min-vh-100">
+  <header>
     <NavMenu />
-  </div>
+  </header>
 
-  <main role="main" class="content px-4">
+  <main role="main" class="flex-grow-1">
     @Body
   </main>
+
+  <footer class="footer mt-auto py-3 bg-white border-top text-center text-muted small">
+    <div class="container">
+      <span>&copy; @DateTime.Now.Year HomeApp - Sistema de Autenticación Blazor & Bootstrap</span>
+    </div>
+  </footer>
 </div>

@@ -2,39 +2,119 @@
 @inject NavigationManager Navigation
 @inject ApplicationUserManager UserManager
 
-<h3>Login</h3>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-primary text-white text-center py-4 rounded-top-4">
+          <div class="mb-2">
+            <i class="bi bi-box-arrow-in-right fs-1"></i>
+          </div>
+          <h3 class="fw-bold mb-0">Iniciar Sesión</h3>
+          <p class="text-white-50 small mb-0 mt-1">Ingresa tus credenciales para continuar</p>
+        </div>
 
-<EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
-  <DataAnnotationsValidator />
-  <ValidationSummary />
+        <div class="card-body p-4 p-md-5">
+          @if (!string.IsNullOrEmpty(errorMessage))
+          {
+            <div class="alert alert-danger d-flex align-items-center mb-4" role="alert">
+              <i class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2"></i>
+              <div>@errorMessage</div>
+            </div>
+          }
 
-  <div class="form-group">
-    <label for="email">Email</label>
-    <InputText id="email" @bind-Value="loginModel.Email" class="form-control" />
+          <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+              <label for="email" class="form-label fw-semibold">Correo Electrónico</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted border-end-0">
+                  <i class="bi bi-envelope"></i>
+                </span>
+                <InputText id="email" @bind-Value="loginModel.Email" class="form-control border-start-0" placeholder="nombre@ejemplo.com" />
+              </div>
+              <ValidationMessage For="@(() => loginModel.Email)" class="text-danger small mt-1" />
+            </div>
+
+            <div class="mb-4">
+              <label for="password" class="form-label fw-semibold">Contraseña</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted border-end-0">
+                  <i class="bi bi-lock"></i>
+                </span>
+                <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control border-start-0" placeholder="Tu contraseña" />
+              </div>
+              <ValidationMessage For="@(() => loginModel.Password)" class="text-danger small mt-1" />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2.5 fw-semibold shadow-sm" disabled="@isSubmitting">
+              @if (isSubmitting)
+              {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <span>Iniciando sesión...</span>
+              }
+              else
+              {
+                <i class="bi bi-box-arrow-in-right me-1"></i>
+                <span>Ingresar</span>
+              }
+            </button>
+          </EditForm>
+
+          <div class="mt-4 p-3 bg-light rounded-3 border">
+            <div class="d-flex align-items-start">
+              <i class="bi bi-info-circle-fill text-primary me-2 mt-1"></i>
+              <div class="small text-muted">
+                <strong>Cuenta Demo:</strong><br />
+                <span>Usuario: <code>admin@demo.com</code></span><br />
+                <span>Contraseña: <code>Admin123!</code></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer bg-light text-center py-3 rounded-bottom-4 border-0">
+          <p class="text-muted small mb-0">
+            ¿No tienes una cuenta? 
+            <NavLink href="/register" class="text-primary fw-semibold text-decoration-none">Regístrate aquí</NavLink>
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <div class="form-group">
-    <label for="password">Password</label>
-    <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" />
-  </div>
-
-  <button type="submit" class="btn btn-primary">Login</button>
-</EditForm>
+</div>
 
 @code {
   private LoginModel loginModel = new();
+  private string? errorMessage;
+  private bool isSubmitting = false;
 
   private async Task HandleLogin()
   {
-    var result = await UserManager.LoginAsync(new LoginModel { Email = loginModel.Email, Password = loginModel.Password });
+    isSubmitting = true;
+    errorMessage = null;
 
-    if (result.Succeeded)
+    try
     {
-      Navigation.NavigateTo("/");
+      var result = await UserManager.LoginAsync(loginModel);
+
+      if (result.Succeeded)
+      {
+        Navigation.NavigateTo("/");
+      }
+      else
+      {
+        errorMessage = string.Join(" ", result.Errors.Select(e => e.Description));
+      }
     }
-    else
+    catch (Exception ex)
     {
-      // Maneja el error de inicio de sesión
+      errorMessage = $"Ocurrió un error inesperado: {ex.Message}";
+    }
+    finally
+    {
+      isSubmitting = false;
     }
   }
 }
